@@ -132,7 +132,7 @@ DataRow categoryDataRow({
           ],
         ),
       ),
-      DataCell(Text('2025')),
+      DataCell(Text('${category.createdAt}')),
       DataCell(
         IconButton(
           onPressed: () {

@@ -1,4 +1,5 @@
 import 'package:admin_dashboard/presentation/categories/cubit/categories_display_cubit.dart';
+import 'package:admin_dashboard/presentation/categories/widgets/add_category_form.dart';
 import 'package:admin_dashboard/presentation/categories/widgets/category_list_section.dart';
 import 'package:admin_dashboard/services/injection_container.dart';
 import 'package:flutter/material.dart';
@@ -42,16 +43,27 @@ class CategoriesPage extends StatelessWidget {
                                   vertical: 16,
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                showAddCategoryForm(context, null);
+                              },
                               icon: Icon(Icons.add),
                               label: Text("Add New"),
                             ),
                             Gap(20),
-                            IconButton(
-                              onPressed: () {
-                                //TODO: should complete getAllCategory
+                            BlocBuilder<
+                              CategoriesDisplayCubit,
+                              CategoriesDisplayState
+                            >(
+                              builder: (context, state) {
+                                return IconButton(
+                                  onPressed: () {
+                                    context
+                                        .read<CategoriesDisplayCubit>()
+                                        .getCategories();
+                                  },
+                                  icon: Icon(Icons.refresh),
+                                );
                               },
-                              icon: Icon(Icons.refresh),
                             ),
                           ],
                         ),

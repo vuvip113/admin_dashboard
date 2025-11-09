@@ -17,4 +17,5 @@ Future<void> init() async {
   sl.registerLazySingleton<LogoutUseCase>(() => LogoutUseCase(sl()));
 
   sl.registerLazySingleton<GetCategoryUsecase>(() => GetCategoryUsecase(sl()));
+  sl.registerLazySingleton<AddCategoryUsecase>(() => AddCategoryUsecase(sl()));
 }

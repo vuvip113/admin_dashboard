@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:admin_dashboard/core/errors/exception.dart';
 import 'package:admin_dashboard/core/errors/failures.dart';
 import 'package:admin_dashboard/core/utils/constants/tydefs.dart';
+import 'package:admin_dashboard/data/category/models/category_model.dart';
 import 'package:admin_dashboard/data/category/source/category_data_source.dart';
 import 'package:admin_dashboard/domain/category/entities/category.dart';
 import 'package:admin_dashboard/domain/category/repo/category_repo.dart';
@@ -15,6 +18,19 @@ class CategoryRepoImpl implements CategoryRepo {
     try {
       final result = await _categoryDataSource.getCategories();
       return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure.fromException(e));
+    }
+  }
+
+  @override
+  ResultVoid addCategory(Category category, File? image) async {
+    try {
+      final categoryModel = CategoryModel.fromEntity(category);
+
+      await _categoryDataSource.addCategory(categoryModel, imageFile: image);
+
+      return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure.fromException(e));
     }

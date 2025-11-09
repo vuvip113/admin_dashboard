@@ -22,6 +22,8 @@ dependencies:
   cloud_firestore:
   flutter_svg:
   gap: ^3.0.1
+  file_picker: ^10.3.3
+  firebase_storage: ^13.0.4
 
 dev_dependencies:
   flutter_test:
