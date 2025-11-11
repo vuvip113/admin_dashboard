@@ -36,18 +36,24 @@ class CategoriesPage extends StatelessWidget {
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                             ),
-                            ElevatedButton.icon(
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 16 * 1.5,
-                                  vertical: 16,
-                                ),
-                              ),
-                              onPressed: () {
-                                showAddCategoryForm(context, null);
+                            Builder(
+                              builder: (context) {
+                                return ElevatedButton.icon(
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16 * 1.5,
+                                      vertical: 16,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    final cubit = context
+                                        .read<CategoriesDisplayCubit>();
+                                    showAddCategoryForm(context, null, cubit);
+                                  },
+                                  icon: Icon(Icons.add),
+                                  label: Text("Add New"),
+                                );
                               },
-                              icon: Icon(Icons.add),
-                              label: Text("Add New"),
                             ),
                             Gap(20),
                             BlocBuilder<

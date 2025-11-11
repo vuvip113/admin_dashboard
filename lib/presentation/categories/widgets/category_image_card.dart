@@ -1,25 +1,32 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CategoryImageCard extends StatelessWidget {
   final String labelText;
-  final String? imageUrlForUpdateImage;
-  final File? imageFile;
+  final File? imageFile; // Ảnh mới user chọn
+  final String? imageUrlForUpdateImage; // Ảnh cũ từ server
   final VoidCallback onTap;
 
   const CategoryImageCard({
     super.key,
     required this.labelText,
     this.imageFile,
-    required this.onTap,
     this.imageUrlForUpdateImage,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    print(imageFile);
-    var size = MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
+    ImageProvider? imageProvider;
+
+    if (imageFile != null) {
+      imageProvider = FileImage(imageFile!); // ảnh mới
+    } else if (imageUrlForUpdateImage != null &&
+        imageUrlForUpdateImage!.startsWith('http')) {
+      imageProvider = NetworkImage(imageUrlForUpdateImage!); // ảnh cũ
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -29,40 +36,16 @@ class CategoryImageCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             color: Colors.grey[200],
+            image: imageProvider != null
+                ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+                : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              if (imageFile != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: kIsWeb
-                      ? Image.network(
-                          imageFile?.path ?? '',
-                          width: double.infinity,
-                          height: 150,
-                          fit: BoxFit.cover,
-                        )
-                      : Image.file(
-                          imageFile!,
-                          width: double.infinity,
-                          height: 150,
-                          fit: BoxFit.cover,
-                        ),
-                )
-              else if (imageUrlForUpdateImage != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    imageUrlForUpdateImage ?? '',
-                    width: double.infinity,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  ),
-                )
-              else
+            children: [
+              if (imageProvider == null)
                 Icon(Icons.camera_alt, size: 50, color: Colors.grey[600]),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 labelText,
                 style: TextStyle(fontSize: 14, color: Colors.grey[800]),

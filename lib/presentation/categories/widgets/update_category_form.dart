@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:admin_dashboard/common/bloc/navigator/button/button_state_cubit.dart';
+import 'package:admin_dashboard/common/helper/images/image_display.dart';
 import 'package:admin_dashboard/core/configs/theme/app_colors.dart';
 import 'package:admin_dashboard/core/utils/constants/tydefs.dart';
 import 'package:admin_dashboard/core/utils/widgets/button/basic_reactive_button.dart';
 import 'package:admin_dashboard/core/utils/widgets/custom_text_field.dart';
 import 'package:admin_dashboard/domain/category/entities/category.dart';
-import 'package:admin_dashboard/domain/category/usecase/add_category_usecase.dart';
+import 'package:admin_dashboard/domain/category/usecase/update_category_usecase.dart';
 import 'package:admin_dashboard/presentation/categories/cubit/categories_display_cubit.dart';
 import 'package:admin_dashboard/presentation/categories/cubit/pick_mage_cate_cubit.dart';
 import 'package:admin_dashboard/presentation/categories/widgets/category_image_card.dart';
@@ -15,14 +16,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 
-class CategorySubmitForm extends StatelessWidget {
+class UpdateCategoryForm extends StatelessWidget {
   final Category? category;
 
-  const CategorySubmitForm({super.key, this.category});
+  const UpdateCategoryForm({super.key, this.category});
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController nameController = TextEditingController();
+    final TextEditingController nameController = TextEditingController(
+      text: category!.name,
+    );
 
     final size = MediaQuery.of(context).size;
 
@@ -41,15 +44,24 @@ class CategorySubmitForm extends StatelessWidget {
             // Hiển thị khung chọn ảnh tạm
             BlocBuilder<PickMageCateCubit, PickMageCateState>(
               builder: (context, state) {
-                File? image;
+                File? selectedImage;
+
                 if (state is PickMageCateSuccess) {
-                  image = state.imageFile;
+                  selectedImage = state.imageFile;
+                }
+
+                // Lấy ảnh server bằng helper
+                String? serverImageUrl;
+                if (category?.imageUrl != null) {
+                  serverImageUrl = ImageDisplayHelper.generateCategoryImageURL(
+                    category!.imageUrl.toString(),
+                  );
                 }
 
                 return CategoryImageCard(
                   labelText: "Category",
-                  imageFile: image,
-                  imageUrlForUpdateImage: category?.imageUrl,
+                  imageFile: selectedImage, // ảnh user chọn
+                  imageUrlForUpdateImage: serverImageUrl, // ảnh server
                   onTap: () {
                     context.read<PickMageCateCubit>().pickImage();
                   },
@@ -59,14 +71,8 @@ class CategorySubmitForm extends StatelessWidget {
             Gap(defaultPadding),
             CustomTextField(
               controller: nameController,
-              labelText: 'Category Name',
+              labelText: "Category",
               onSave: (val) {},
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a category name';
-                }
-                return null;
-              },
             ),
             Gap(defaultPadding * 2),
             SizedBox(
@@ -91,50 +97,52 @@ class CategorySubmitForm extends StatelessWidget {
                       title: 'Submit',
                       onPressed: () async {
                         final buttonCubit = context.read<ButtonStateCubit>();
-                        final addCategoryUsecase = sl<AddCategoryUsecase>();
-                        final imageFile =
-                            context.read<PickMageCateCubit>().state
-                                is PickMageCateSuccess
-                            ? (context.read<PickMageCateCubit>().state
-                                      as PickMageCateSuccess)
-                                  .imageFile
-                            : null;
+                        final imageCubit = context.read<PickMageCateCubit>();
+                        File? selectedImage;
+                        if (imageCubit.state is PickMageCateSuccess) {
+                          selectedImage =
+                              (imageCubit.state as PickMageCateSuccess)
+                                  .imageFile;
+                        }
 
-                        final category = Category(
-                          id: '',
-                          name: nameController.text,
-                          imageUrl: '',
-                          createdAt: DateTime.now(),
+                        final updateUseCase =
+                            sl<
+                              UpdateCategoryUsecase
+                            >(); // gọi từ injection_container
+                        final updatedCategory = category!.copyWith(
+                          name: nameController.text.isNotEmpty
+                              ? nameController.text
+                              : category!.name,
                         );
 
-                        // Bật state loading trên nút
                         buttonCubit.showLoading();
 
-                        // Gọi usecase
-                        final result = await addCategoryUsecase(
-                          category,
-                          image: imageFile,
+                        final result = await updateUseCase(
+                          updatedCategory,
+                          image: selectedImage,
                         );
 
-                        // Tắt loading
                         buttonCubit.reset();
 
-                        // Xử lý kết quả
                         result.fold(
-                          (failure) =>
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('❌ ${failure.message}')),
+                          (failure) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Lỗi: ${failure.message}'),
                               ),
+                            );
+                          },
                           (_) {
                             context
                                 .read<CategoriesDisplayCubit>()
                                 .getCategories();
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('✅ Added category successfully!'),
+                                content: Text('Cập nhật danh mục thành công!'),
                               ),
                             );
-                            Navigator.of(context).pop(); // Đóng popup form
+                            Navigator.of(context).pop(); // đóng form
                           },
                         );
                       },
@@ -152,7 +160,7 @@ class CategorySubmitForm extends StatelessWidget {
 }
 
 // 👉 Hàm hiển thị popup Add Category
-void showAddCategoryForm(
+void showUpdateCategoryForm(
   BuildContext context,
   Category? category,
   CategoriesDisplayCubit categoriesCubit,
@@ -170,11 +178,11 @@ void showAddCategoryForm(
           backgroundColor: AppColors.secondBackground,
           title: Center(
             child: Text(
-              'Add Category'.toUpperCase(),
+              'Update Category'.toUpperCase(),
               style: TextStyle(color: AppColors.primary),
             ),
           ),
-          content: CategorySubmitForm(category: category),
+          content: UpdateCategoryForm(category: category),
         ),
       );
     },

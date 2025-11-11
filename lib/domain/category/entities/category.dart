@@ -13,6 +13,21 @@ class Category extends Equatable {
     required this.createdAt,
   });
 
+  // ✅ Thêm hàm copyWith
+  Category copyWith({
+    String? id,
+    String? name,
+    String? imageUrl,
+    DateTime? createdAt,
+  }) {
+    return Category(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   @override
   List<Object?> get props => [id, name, imageUrl, createdAt];
 }

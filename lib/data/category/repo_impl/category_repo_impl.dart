@@ -35,4 +35,30 @@ class CategoryRepoImpl implements CategoryRepo {
       return Left(ServerFailure.fromException(e));
     }
   }
+
+  @override
+  ResultVoid updateCategory(Category category, File? image) async {
+    try {
+      final categoryModel = CategoryModel.fromEntity(category);
+
+      await _categoryDataSource.updateCategory(
+        categoryModel,
+        newImageFile: image,
+      );
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure.fromException(e));
+    }
+  }
+
+  @override
+  ResultVoid deleteCategory(String id) async {
+    try {
+      final future = _categoryDataSource.deleteCategory(id);
+      return Future.value(future).then((_) => const Right(null));
+    } on ServerException catch (e) {
+      return Left(ServerFailure.fromException(e));
+    }
+  }
 }

@@ -1,5 +1,7 @@
 import 'package:admin_dashboard/domain/category/entities/category.dart';
+import 'package:admin_dashboard/domain/category/usecase/delete_category_usecase.dart';
 import 'package:admin_dashboard/domain/category/usecase/get_category_usecase.dart';
+import 'package:admin_dashboard/services/injection_container.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -16,6 +18,19 @@ class CategoriesDisplayCubit extends Cubit<CategoriesDisplayState> {
     result.fold(
       (failure) => emit(CategoriesDisplayError(message: failure.message)),
       (categories) => emit(CategoriesDisplayLoaded(categories: categories)),
+    );
+  }
+
+   Future<void> deleteCategory(Category category) async {
+    emit(CategoriesDisplayLoading());
+    final result = await sl<DeleteCategoryUsecase>().call(category);
+    result.fold(
+      (failure) {
+        emit(CategoriesDisplayError(message: failure.message));
+      },
+      (_) async {
+        await getCategories(); 
+      },
     );
   }
 }

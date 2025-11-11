@@ -6,4 +6,6 @@ import 'package:admin_dashboard/domain/category/entities/category.dart';
 abstract class CategoryRepo {
   ResultFuture<List<Category>> getCategories();
   ResultVoid addCategory(Category category, File? image);
+  ResultVoid updateCategory(Category category, File? image);
+  ResultVoid deleteCategory(String id);
 }

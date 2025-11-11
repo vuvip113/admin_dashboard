@@ -18,4 +18,10 @@ Future<void> init() async {
 
   sl.registerLazySingleton<GetCategoryUsecase>(() => GetCategoryUsecase(sl()));
   sl.registerLazySingleton<AddCategoryUsecase>(() => AddCategoryUsecase(sl()));
+  sl.registerLazySingleton<UpdateCategoryUsecase>(
+    () => UpdateCategoryUsecase(sl()),
+  );
+  sl.registerLazySingleton<DeleteCategoryUsecase>(
+    () => DeleteCategoryUsecase(sl()),
+  );
 }

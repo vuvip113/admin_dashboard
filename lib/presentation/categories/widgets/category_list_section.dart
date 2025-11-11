@@ -1,7 +1,9 @@
+import 'package:admin_dashboard/common/helper/dialog/confirm_delete_dialog.dart';
 import 'package:admin_dashboard/common/helper/images/image_display.dart';
 import 'package:admin_dashboard/core/configs/theme/app_colors.dart';
 import 'package:admin_dashboard/domain/category/entities/category.dart';
 import 'package:admin_dashboard/presentation/categories/cubit/categories_display_cubit.dart';
+import 'package:admin_dashboard/presentation/categories/widgets/update_category_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -47,7 +49,7 @@ class CategoryListSection extends StatelessWidget {
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 1.1,
+                    width: MediaQuery.of(context).size.width / 1.2,
                     child: DataTable(
                       columnSpacing: 16,
                       columns: const [
@@ -61,11 +63,14 @@ class CategoryListSection extends StatelessWidget {
                             (cat) => categoryDataRow(
                               category: cat,
                               edit: () {
-                                print("Edit: ${cat.name}");
+                                showUpdateCategoryForm(
+                                  context,
+                                  cat,
+                                  context.read<CategoriesDisplayCubit>(),
+                                );
                               },
-                              delete: () {
-                                print("Delete: ${cat.name}");
-                              },
+                              delete: () async {},
+                              context: context,
                             ),
                           )
                           .toList(),
@@ -101,6 +106,7 @@ class CategoryListSection extends StatelessWidget {
 }
 
 DataRow categoryDataRow({
+  required BuildContext context,
   required Category category,
   Function? edit,
   Function? delete,
@@ -143,8 +149,20 @@ DataRow categoryDataRow({
       ),
       DataCell(
         IconButton(
-          onPressed: () {
-            if (delete != null) delete();
+          onPressed: () async {
+            final confirm = await showConfirmDeleteDialog(
+              context: context,
+              itemName: category.name,
+            );
+
+            if (confirm == true) {
+              await context.read<CategoriesDisplayCubit>().deleteCategory(
+                category,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Cập nhật danh mục thành công!')),
+              );
+            }
           },
           icon: Icon(Icons.delete, color: Colors.red),
         ),
