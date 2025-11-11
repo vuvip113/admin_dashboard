@@ -1,4 +1,5 @@
 import 'package:admin_dashboard/common/bloc/navigator/navigation_cubit.dart';
+import 'package:admin_dashboard/common/bloc/search/search_cubit.dart';
 import 'package:admin_dashboard/core/configs/assets/app_images.dart';
 import 'package:admin_dashboard/core/configs/theme/app_colors.dart';
 import 'package:admin_dashboard/presentation/categories/pages/categories.dart';
@@ -9,8 +10,22 @@ import 'package:admin_dashboard/services/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  final TextEditingController _searchController = TextEditingController();
+  NavigationTab? _lastTab;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   String _getTitle(NavigationTab tab) {
     switch (tab) {
@@ -24,6 +39,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.watch<NavigationCubit>();
+    final searchCubit = context.read<SearchCubit>();
     Widget body;
 
     switch (cubit.state) {
@@ -33,9 +49,13 @@ class DashboardPage extends StatelessWidget {
       default:
         body = const HomePage();
     }
-
-    return BlocProvider(
-      create: (context) => LogoutCubit(sl()),
+    if (_lastTab != null && _lastTab != cubit.state) {
+      _searchController.clear();
+      searchCubit.setQuery('');
+    }
+    _lastTab = cubit.state;
+    return MultiBlocProvider(
+      providers: [BlocProvider(create: (_) => LogoutCubit(sl()))],
       child: Scaffold(
         body: Row(
           children: [
@@ -113,6 +133,8 @@ class DashboardPage extends StatelessWidget {
                           width: 250,
                           height: 40,
                           child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) => searchCubit.setQuery(value),
                             decoration: InputDecoration(
                               hintText: 'Search...',
                               prefixIcon: const Icon(Icons.search),

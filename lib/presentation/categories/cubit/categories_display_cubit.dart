@@ -13,23 +13,29 @@ class CategoriesDisplayCubit extends Cubit<CategoriesDisplayState> {
   final GetCategoryUsecase _getCategoryUsecase;
 
   Future<void> getCategories() async {
+    if (isClosed) return;
     emit(CategoriesDisplayLoading());
     final result = await _getCategoryUsecase.call();
     result.fold(
-      (failure) => emit(CategoriesDisplayError(message: failure.message)),
-      (categories) => emit(CategoriesDisplayLoaded(categories: categories)),
+      (failure) {
+        if (!isClosed) emit(CategoriesDisplayError(message: failure.message));
+      },
+      (categories) {
+        if (!isClosed) emit(CategoriesDisplayLoaded(categories: categories));
+      },
     );
   }
 
-   Future<void> deleteCategory(Category category) async {
+  Future<void> deleteCategory(Category category) async {
+    if (isClosed) return;
     emit(CategoriesDisplayLoading());
     final result = await sl<DeleteCategoryUsecase>().call(category);
     result.fold(
       (failure) {
-        emit(CategoriesDisplayError(message: failure.message));
+        if (!isClosed) emit(CategoriesDisplayError(message: failure.message));
       },
-      (_) async {
-        await getCategories(); 
+      (_) {
+        if (!isClosed) Future.microtask(() => getCategories());
       },
     );
   }

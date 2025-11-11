@@ -1,4 +1,4 @@
-import 'package:admin_dashboard/common/bloc/navigator/button/button_state.dart';
+import 'package:admin_dashboard/common/bloc/button/button_state.dart';
 import 'package:admin_dashboard/core/usecase/usecase.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';

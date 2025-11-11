@@ -1,4 +1,5 @@
 import 'package:admin_dashboard/common/bloc/navigator/navigation_cubit.dart';
+import 'package:admin_dashboard/common/bloc/search/search_cubit.dart';
 import 'package:admin_dashboard/core/configs/theme/app_theme.dart';
 import 'package:admin_dashboard/firebase_options.dart';
 import 'package:admin_dashboard/presentation/login/pages/login_page.dart';
@@ -11,7 +12,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await init();
-  runApp(const MyApp());
+  runApp(
+    MultiBlocProvider(
+      providers: [BlocProvider(create: (_) => SearchCubit())],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

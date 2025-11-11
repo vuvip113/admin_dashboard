@@ -1,6 +1,8 @@
+import 'package:admin_dashboard/common/bloc/search/search_cubit.dart';
 import 'package:admin_dashboard/common/helper/dialog/confirm_delete_dialog.dart';
 import 'package:admin_dashboard/common/helper/images/image_display.dart';
 import 'package:admin_dashboard/core/configs/theme/app_colors.dart';
+import 'package:admin_dashboard/core/utils/widgets/top_snack_bar.dart';
 import 'package:admin_dashboard/domain/category/entities/category.dart';
 import 'package:admin_dashboard/presentation/categories/cubit/categories_display_cubit.dart';
 import 'package:admin_dashboard/presentation/categories/widgets/update_category_form.dart';
@@ -12,6 +14,7 @@ class CategoryListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final searchQuery = context.watch<SearchCubit>().state.toLowerCase();
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16),
@@ -36,13 +39,20 @@ class CategoryListSection extends StatelessWidget {
                   ),
                 );
               }
+
               if (state is CategoriesDisplayLoaded) {
-                final categories = state.categories;
+                final categories = state.categories.where((cat) {
+                  return cat.name.toLowerCase().contains(searchQuery);
+                }).toList();
+
+                // final categories = state.categories;
 
                 if (categories.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(20),
-                    child: Center(child: Text('Chưa có danh mục nào.')),
+                    child: Center(
+                      child: Text('Không tìm thấy danh mục phù hợp.'),
+                    ),
                   );
                 }
 
@@ -159,9 +169,7 @@ DataRow categoryDataRow({
               await context.read<CategoriesDisplayCubit>().deleteCategory(
                 category,
               );
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cập nhật danh mục thành công!')),
-              );
+              TopSnackBar.show(context, "✅ Cập nhật danh mục thành công!");
             }
           },
           icon: Icon(Icons.delete, color: Colors.red),

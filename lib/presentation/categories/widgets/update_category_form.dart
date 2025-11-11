@@ -1,11 +1,12 @@
 import 'dart:io';
 
-import 'package:admin_dashboard/common/bloc/navigator/button/button_state_cubit.dart';
+import 'package:admin_dashboard/common/bloc/button/button_state_cubit.dart';
 import 'package:admin_dashboard/common/helper/images/image_display.dart';
 import 'package:admin_dashboard/core/configs/theme/app_colors.dart';
 import 'package:admin_dashboard/core/utils/constants/tydefs.dart';
 import 'package:admin_dashboard/core/utils/widgets/button/basic_reactive_button.dart';
 import 'package:admin_dashboard/core/utils/widgets/custom_text_field.dart';
+import 'package:admin_dashboard/core/utils/widgets/top_snack_bar.dart';
 import 'package:admin_dashboard/domain/category/entities/category.dart';
 import 'package:admin_dashboard/domain/category/usecase/update_category_usecase.dart';
 import 'package:admin_dashboard/presentation/categories/cubit/categories_display_cubit.dart';
@@ -136,11 +137,9 @@ class UpdateCategoryForm extends StatelessWidget {
                             context
                                 .read<CategoriesDisplayCubit>()
                                 .getCategories();
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Cập nhật danh mục thành công!'),
-                              ),
+                            TopSnackBar.show(
+                              context,
+                              "✅ Cập nhật danh mục thành công!",
                             );
                             Navigator.of(context).pop(); // đóng form
                           },
